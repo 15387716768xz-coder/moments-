@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">此刻</string>
+    <string name="accessibility_service_description">
+        此刻使用无障碍服务来检测您打开的应用。
+        当您打开已绑定的应用时，「此刻」会弹出帮助您暂停一下，避免无意识地刷视频。
+        我们不会收集或上传您的应用使用数据。
+    </string>
+</resources>

@@ -1,0 +1,29 @@
+{
+  "name": "cike",
+  "version": "1.0.0",
+  "description": "此刻 — 数字健康陪伴应用",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "cap:sync": "npx cap sync android && node scripts/patch-plugins.mjs",
+    "cap:open": "npx cap open android",
+    "cap:build": "npm run build && npx cap sync android && node scripts/patch-plugins.mjs"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.0.0",
+    "@capacitor/app": "^6.0.0",
+    "@capacitor/core": "^6.0.0",
+    "@capacitor/preferences": "^6.0.0",
+    "@capacitor/status-bar": "^6.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.0.0",
+    "@vitejs/plugin-react": "^4.3.0",
+    "typescript": "^6.0.3",
+    "vite": "^5.4.0"
+  }
+}

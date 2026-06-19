@@ -1,0 +1,87 @@
+/* ── Reset ────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root {
+  height: 100%;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background: #15192A;
+  color: #EDE9E0;
+  font-family: system-ui, -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+}
+
+/* ── Animations ──────────────────────────────────── */
+@keyframes dk {
+  0%, 60%, 100% { transform: scale(0.3); opacity: 0.3; }
+  30%           { transform: scale(1);   opacity: 1; }
+}
+
+@keyframes fi {
+  from { opacity: 0; transform: translateY(7px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Interactive ─────────────────────────────────── */
+button:active {
+  opacity: 0.65 !important;
+  transform: scale(0.97);
+}
+
+textarea {
+  outline: none;
+  font-family: system-ui, -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+}
+
+textarea::placeholder {
+  color: #7B8299;
+}
+
+textarea:focus {
+  border-color: #9E7ECC !important;
+}
+
+/* ── Scrollbar ───────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #313B55;
+  border-radius: 4px;
+}
+
+/* ── Utility ─────────────────────────────────────── */
+.animate-fi {
+  animation: fi 0.3s ease;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.35s ease;
+}
+
+/* 安全区域适配（刘海屏/挖孔屏） */
+.safe-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
