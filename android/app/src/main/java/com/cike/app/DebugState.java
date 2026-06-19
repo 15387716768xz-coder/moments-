@@ -78,6 +78,7 @@ public class DebugState {
             }
         }
         ed.apply();
+        InterceptorState.clearAll(ctx);
         log("DEBUG", "所有放行标记已清除");
     }
 }

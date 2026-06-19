@@ -3,6 +3,7 @@ package com.cike.app;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.Log;
 import android.webkit.JavascriptInterface;
 
 import com.getcapacitor.BridgeActivity;
@@ -43,6 +44,7 @@ public class MainActivity extends BridgeActivity {
         /** "停止"出口：跳主屏 + 短暂放行，防止 TikTok 残影触发误检测 */
         @JavascriptInterface
         public void exitStop(String pkg) {
+            Log.i("CIKE", "EXIT_STOP: " + pkg);
             AppBindingPlugin.allowNextLaunchOf(getApplicationContext(), pkg);
             goHome();
         }
@@ -50,15 +52,23 @@ public class MainActivity extends BridgeActivity {
         /** "刷一会儿"出口：计时器放行 + 短暂放行 + 启动目标 App */
         @JavascriptInterface
         public void exitScroll(String pkg, int minutes) {
+            Log.i("CIKE", "EXIT_SCROLL: " + pkg + " minutes=" + minutes + " now=" + System.currentTimeMillis());
             InterceptorState.allowUntil(getApplicationContext(), pkg, minutes);
+            Log.i("CIKE", "EXIT_SCROLL allowUntil done, checking prefs...");
+            // 验证写入
+            long verify = getApplicationContext().getSharedPreferences("app_binding_prefs", MODE_PRIVATE)
+                    .getLong("timer_allow_" + pkg, -1L);
+            Log.i("CIKE", "EXIT_SCROLL verify timer_allow_" + pkg + " = " + verify + " (now=" + System.currentTimeMillis() + ")");
             AppBindingPlugin.allowNextLaunchOf(getApplicationContext(), pkg);
             // 启动目标 app
             Intent launch = getPackageManager().getLaunchIntentForPackage(pkg);
             if (launch != null) {
                 launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(launch);
+                Log.i("CIKE", "EXIT_SCROLL launched: " + pkg);
+            } else {
+                Log.i("CIKE", "EXIT_SCROLL no launch intent for: " + pkg);
             }
-            // Capacitor app 保持常驻，不 finish
         }
 
         /** "回主页"出口：跳主屏 */

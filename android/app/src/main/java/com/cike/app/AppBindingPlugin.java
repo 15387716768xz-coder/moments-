@@ -279,26 +279,25 @@ public class AppBindingPlugin extends Plugin {
      */
     public static void setBoundAppsJson(Context context, String json) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        prefs.edit().putString(KEY_BOUND_APPS, json).apply();
+        prefs.edit().putString(KEY_BOUND_APPS, json).commit();
         AppDetectionService.updateBoundPackages(context);
     }
 
     /**
-     * 短暂放行（2-3秒）：停止拦截后，让 TikTok 后台任务安静消失。
-     * 跨进程通过 SharedPreferences 传递。
+     * 短暂放行（3 秒）：停止拦截后，让目标 App 后台任务安静消失。
+     *
+     * 改用 InterceptorState 文件存储（原子写入），避免 SharedPreferences 跨进程缓存不同步。
      */
     public static void allowNextLaunchOf(Context context, String pkg) {
-        long until = System.currentTimeMillis() + 3000; // 3 秒窗口
-        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-                .edit().putLong("allow_next_" + pkg, until).apply();
+        InterceptorState.allowNext(context, pkg);
     }
 
     /**
      * 检查短暂放行标记是否有效。时间窗口过期自动失效。
+     *
+     * 改用 InterceptorState 文件存储，每次读取都是最新磁盘内容。
      */
     public static boolean shouldAllowOnce(Context context, String pkg) {
-        long until = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-                .getLong("allow_next_" + pkg, 0L);
-        return System.currentTimeMillis() < until;
+        return InterceptorState.isAllowedNext(context, pkg);
     }
 }

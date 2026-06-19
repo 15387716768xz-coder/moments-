@@ -14,6 +14,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
+import android.util.Log;
 import android.view.accessibility.AccessibilityEvent;
 
 import org.json.JSONArray;
@@ -60,7 +61,17 @@ public class AppDetectionService extends AccessibilityService {
         setServiceInfo(info);
 
         startForegroundService();
+        // 清除上次 session 遗留的所有放行标记
+        DebugState.clearAllAllowances(this);
         updateBoundPackages(this);
+        // 调试：打印 prefs 完整内容
+        try {
+            java.util.Map<String, ?> all = getSharedPreferences("app_binding_prefs", MODE_PRIVATE).getAll();
+            Log.i("CIKE", "SVC_START prefs: " + all.keySet());
+            for (java.util.Map.Entry<String, ?> e : all.entrySet()) {
+                Log.i("CIKE", "  " + e.getKey() + " = " + e.getValue());
+            }
+        } catch (Exception ex) { Log.i("CIKE", "prefs err: " + ex.getMessage()); }
 
         // 在独立后台线程启动轮询
         startBackgroundPolling();
@@ -70,6 +81,8 @@ public class AppDetectionService extends AccessibilityService {
        路径 1：AccessibilityEvent
        ═══════════════════════════════════════════════ */
 
+    private int eventCount = 0;
+
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
         int type = event.getEventType();
@@ -78,11 +91,13 @@ public class AppDetectionService extends AccessibilityService {
             return;
         }
 
+        eventCount++;
         CharSequence pkgSeq = event.getPackageName();
         if (pkgSeq == null) return;
         String pkg = pkgSeq.toString().trim();
         if (pkg.isEmpty()) return;
 
+        if (eventCount % 5 == 1) Log.i("CIKE", "Event #" + eventCount + ": pkg=" + pkg + " type=" + type);
         checkAndTrigger(pkg);
     }
 
@@ -155,17 +170,19 @@ public class AppDetectionService extends AccessibilityService {
 
         if (!isBoundPackage(currentPackage)) return;
 
+        Log.i("CIKE", "BOUND: " + currentPackage + " (bound=" + cachedBoundPackages.length + " apps)");
+
         long now = System.currentTimeMillis();
 
-        // 放行条件 1：短暂放行（allowNextLaunchOf，2-3秒）
+        // 放行条件 1：短暂放行（allowNextLaunchOf）
         if (AppBindingPlugin.shouldAllowOnce(this, currentPackage)) {
-            DebugState.log("DETECT", currentPackage + " → allowNextLaunchOf 放行");
+            Log.i("CIKE", "ALLOW_NEXT_PASS: " + currentPackage);
             return;
         }
 
-        // 放行条件 2：计时器期间放行（跨进程 SharedPreferences）
+        // 放行条件 2：计时器期间放行（文件 I/O，可靠跨进程）
         if (InterceptorState.isAllowed(this, currentPackage)) {
-            DebugState.log("DETECT", currentPackage + " → 计时器放行中");
+            Log.i("CIKE", "TIMER_PASS: " + currentPackage + " 计时器放行中");
             return;
         }
 

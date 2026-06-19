@@ -196,6 +196,8 @@ export default function App() {
 
   const loadSettings = async () => {
     try {
+      // 清除上次遗留的放行标记（避免旧计时器数据干扰新 session）
+      window._NativeBridge?.clearAllAllowances?.();
       const pkgs = await nativeGetBoundApps();
       setBoundApps(Array.isArray(pkgs) ? pkgs : (pkgs.packages || []));
       const svc = await nativeIsServiceEnabled();
